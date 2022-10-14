@@ -7,6 +7,7 @@ LABEL email="darrenfoley015@gmail.com"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
+#ENV DB_HOSTNAME $DB_HOST
 
 RUN echo "tzdata tzdata/Areas select Europe" > /tmp/preseed.txt; \
     echo "tzdata tzdata/Zones/Europe select Dublin" >> /tmp/preseed.txt; \
@@ -26,7 +27,7 @@ RUN sed -i "/^<Directory \/var\/www\/>/a\\\tOrder allow,deny" /etc/apache2/apach
 
 COPY . /var/www/html/
 
-RUN sed -i 's/172.20.1.101/localhost/g' '/var/www/html/index.php'
+#RUN sed -i "s/172.20.1.101/${DB_HOSTNAME}/g" '/var/www/html/index.php'
 
 EXPOSE 80
 
