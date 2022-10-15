@@ -1,14 +1,16 @@
 
-variable "vpc_cidr" {
-  default = "10.10.0.0/16"
-}
+variable "vpc_cidr" {}
 
-variable "private_subnet_cidr" {
-  default = "10.10.1.0/24"
-}
+variable "private_subnet_cidr" {}
 
-variable "public_subnet_cidr" {
-  default = "10.10.2.0/24"
-}
+variable "public_subnet_cidr" {}
+
+variable "db_name" {}
+
+variable "db_port" {}
+
+variable "db_user" {}
+
+variable "db_password" {}
 
 
