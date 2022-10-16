@@ -7,18 +7,29 @@ resource "aws_vpc" "ecomm_vpc" {
   }
 }
 
-resource "aws_subnet" "ecomm_private_subnet" {
+resource "aws_subnet" "ecomm_private_subnet1" {
   vpc_id     = aws_vpc.ecomm_vpc.id
-  cidr_block = var.private_subnet_cidr
+  cidr_block = var.private_subnet_cidr1
 
   tags = {
-    Name = "ecomm_private_subnet"
+    Name = "ecomm_private_subnet1"
   }
   depends_on = [
     aws_vpc.ecomm_vpc
   ]
 }
 
+resource "aws_subnet" "ecomm_private_subnet2" {
+  vpc_id     = aws_vpc.ecomm_vpc.id
+  cidr_block = var.private_subnet_cidr2
+
+  tags = {
+    Name = "ecomm_private_subnet2"
+  }
+  depends_on = [
+    aws_vpc.ecomm_vpc
+  ]
+}
 resource "aws_subnet" "ecomm_public_subnet" {
   vpc_id     = aws_vpc.ecomm_vpc.id
   cidr_block = var.public_subnet_cidr
@@ -70,8 +81,13 @@ resource "aws_route_table" "ecomm_private_route_table" {
   }
 }
 
-resource "aws_route_table_association" "ecomm_associate_private" {
-  subnet_id      = aws_subnet.ecomm_private_subnet.id
+resource "aws_route_table_association" "ecomm_associate_private1" {
+  subnet_id      = aws_subnet.ecomm_private_subnet1.id
+  route_table_id = aws_route_table.ecomm_private_route_table.id
+}
+
+resource "aws_route_table_association" "ecomm_associate_private2" {
+  subnet_id      = aws_subnet.ecomm_private_subnet2.id
   route_table_id = aws_route_table.ecomm_private_route_table.id
 }
 

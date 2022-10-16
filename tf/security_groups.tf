@@ -39,7 +39,7 @@ resource "aws_security_group" "ecomm_rds_security_group" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["10.10.2.0/24"]
+    cidr_blocks = [var.public_subnet_cidr]
   }
 
   tags = {

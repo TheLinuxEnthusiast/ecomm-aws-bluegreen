@@ -27,6 +27,15 @@ resource "aws_secretsmanager_secret_version" "db-pass-val" {
   )
 }
 
+resource "aws_db_subnet_group" "ecomm_subnet_group" {
+  name        = "ecomm_rds_subnet_group"
+  description = "DB Subnet group for Ecomm RDS instance"
+  subnet_ids  = [aws_subnet.ecomm_private_subnet1.id, aws_subnet.ecomm_private_subnet2.id]
+  tags = {
+    Name = "ecomm_subnet_group"
+  }
+}
+
 
 resource "aws_db_instance" "ecomm_mysql_db" {
   allocated_storage    = 10
@@ -40,11 +49,15 @@ resource "aws_db_instance" "ecomm_mysql_db" {
   parameter_group_name = "default.mysql5.7"
   skip_final_snapshot  = true
 
+  db_subnet_group_name   = aws_db_subnet_group.ecomm_subnet_group.id
+  vpc_security_group_ids = [aws_security_group.ecomm_rds_security_group.id]
+
   tags = {
     Name = "ecomm_mysql_db"
   }
 }
 
+/*
 resource "null_resource" "db_bootstrap" {
   triggers = {
     file = filesha1("sql/bootstrap.sql")
@@ -68,4 +81,4 @@ resource "null_resource" "db_bootstrap" {
     aws_db_instance.ecomm_mysql_db
   ]
 }
-
+*/
