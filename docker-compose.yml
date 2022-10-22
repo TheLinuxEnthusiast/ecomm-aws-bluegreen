@@ -2,9 +2,10 @@ version: "3.6"
 
 services:
    ecomm-frontend:
-       image: 275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:1.0.2
+       image: 275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:latest
        ports:
          - "80:80"
+         - "443:443"
        environment:
          DB_HOSTNAME: "172.20.0.3"
        networks:
