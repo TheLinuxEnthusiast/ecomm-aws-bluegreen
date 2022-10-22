@@ -1,0 +1,32 @@
+version: "3.6"
+
+services:
+   ecomm-frontend:
+       image: 275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:1.0.2
+       ports:
+         - "80:80"
+       environment:
+         DB_HOSTNAME: "172.20.0.3"
+       networks:
+         ecomm:
+            ipv4_address: "172.20.0.2"
+       
+   
+   ecomm-backend:
+       image: 275562404519.dkr.ecr.eu-west-1.amazonaws.com/mariadb:latest 
+       ports:
+         - "3306:3306"
+       environment:
+         MARIADB_ROOT_PASSWORD: "12345"
+       volumes:
+         - /var/data/:/var/lib/sql:Z
+         - ./db/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql:Z
+       networks:
+         ecomm:
+            ipv4_address: "172.20.0.3"
+
+networks:
+  ecomm:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
