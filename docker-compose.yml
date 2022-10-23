@@ -18,9 +18,9 @@ services:
        ports:
          - "3306:3306"
        environment:
-         MARIADB_ROOT_PASSWORD: "12345"
+         MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
        volumes:
-         - /var/data/:/var/lib/sql:Z
+         - ecomdb:/var/lib/sql:Z
          - ./db/init_script.sql:/docker-entrypoint-initdb.d/init_script.sql:Z
        networks:
          ecomm:
@@ -31,3 +31,6 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/24
+
+volumes:
+  ecomdb:
