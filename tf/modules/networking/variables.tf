@@ -5,7 +5,3 @@ variable "ecomm_private_subnet_1" {}
 variable "ecomm_private_subnet_2" {}
 variable "ecomm_public_subnet_1" {}
 variable "ecomm_public_subnet_2" {}
-
-variable "regions" {
-	type = list(string)
-}
