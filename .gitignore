@@ -5,3 +5,5 @@ tf/.terraform/
 tf/terraform.tfstate
 tf/terraform.tfstate.backup
 000-default.conf
+packer/files/config
+packer/files/credentials
