@@ -6,7 +6,7 @@ terraform {
     key    = "network/terraform.state"
     region = "eu-west-1"
   }
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -17,21 +17,33 @@ terraform {
 
 
 provider "aws" {
-	region = "eu-west-1"
+  region = "eu-west-1"
 }
 
-module "networking" {
-	source = "./modules/networking"
 
-	ecomm_vpc = var.ecomm_vpc
-	prefix = var.prefix
-	ecomm_private_subnet_1 = var.ecomm_private_subnet_1
-	ecomm_private_subnet_2 = var.ecomm_private_subnet_2
-	ecomm_public_subnet_1 = var.ecomm_public_subnet_1
-	ecomm_public_subnet_2 = var.ecomm_public_subnet_2
+# Network for High Availability
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "${var.prefix}-vpc"
+  cidr = var.ecomm_vpc
+
+  azs             = var.azs
+  private_subnets = ["${var.ecomm_private_subnet_1}", "${var.ecomm_private_subnet_2}"]
+  public_subnets  = ["${var.ecomm_public_subnet_1}", "${var.ecomm_public_subnet_2}"]
+
+  enable_nat_gateway = true
+  enable_vpn_gateway = false
+
+  tags = {
+    Environment = "development"
+    Name        = "${var.prefix}-application"
+  }
 }
 
-output "ecomm_vpc_id" {
-	value = module.networking.ecomm_vpc_id
+module "ec2_autoscaling_config" {
+  source          = "./modules/ec2_instance"
+  instance_size   = var.instance_size
+  prefix          = var.prefix
+  private_subnets = module.vpc.private_subnets
 }
-
