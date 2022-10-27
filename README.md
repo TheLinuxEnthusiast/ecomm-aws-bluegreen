@@ -122,3 +122,24 @@ sudo sed -i 's/172.20.1.101/localhost/g' /var/www/html/index.php
 ```
 curl http://localhost
 ```
+
+# Docker-compose Application
+
+For convenience, a docker-compose configuration was created which spins up the ecomm web application along with a mariaDB databases in a docker container. Simply run the following command to spin up the entire application:
+
+```
+> docker-compose up --detach
+```
+
+
+# Packer - AMI for ecomm application
+
+A packer configuration was also created to create a dedicated AMI for running the application. To perform a build run the following from the packer/ directory.
+
+```
+> packer build ecomm-app.pkr.hcl
+```
+
+The build expects a packer/scripts directory containing a script called bootstrap.sh. This loads all required dependencies for running docker-compose. In addition, the packer/files directory is expected which will contain the access/secret key of the user that will pull container images from ECR. It expects a config & credentials file. 
+
+
