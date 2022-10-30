@@ -1,26 +1,17 @@
 
-# Configure target group
-resource "aws_lb_target_group" "target_group" {
-  name        = "${var.prefix}-target-group"
-  port        = 443
-  protocol    = "HTTPS"
-  vpc_id      = var.ecomm_vpc_id
-}
-
-
 # Security group for load balancer
 resource "aws_security_group" "lb_security_group" {
   name        = "lb_security_group"
   description = "Allow TLS inbound traffic"
-  vpc_id      = var.ecomm_vpc.id
+  vpc_id      = var.ecomm_vpc_id
 
   ingress {
     description      = "TLS from VPC"
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = [var.ecomm_vpc.cidr_block]
-    ipv6_cidr_blocks = [var.ecomm_vpc.ipv6_cidr_block]
+    cidr_blocks      = [var.ecomm_vpc_cidr]
+    ipv6_cidr_blocks = [var.ecomm_vpc_ipv6_cidr]
   }
 
   ingress {
@@ -28,8 +19,8 @@ resource "aws_security_group" "lb_security_group" {
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
-    cidr_blocks      = [var.ecomm_vpc.cidr_block]
-    ipv6_cidr_blocks = [var.ecomm_vpc.ipv6_cidr_block]
+    cidr_blocks      = [var.ecomm_vpc_cidr]
+    ipv6_cidr_blocks = [var.ecomm_vpc_ipv6_cidr]
   }
 
   egress {
@@ -45,24 +36,41 @@ resource "aws_security_group" "lb_security_group" {
   }
 }
 
-# Create an application load balancer
-resource "aws_lb" "ecomm_load_balancer" {
-  name               = "${var.prefix}_load_balancer"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_security_group.id]
-  subnets            = [for subnet in aws_subnet.public : subnet.id]
 
-  enable_deletion_protection = false
-
-  access_logs {
-    bucket  = var.aws_bucket_logs
-    prefix  = "ecomm-lb"
-    enabled = true
-  }
-
+resource "aws_alb" "ecomm_alb" {
+  name            = "${var.prefix}-alb"
+  security_groups = ["${aws_security_group.lb_security_group.id}"]
+  subnets         = var.private_subnets
   tags = {
-    Environment = "development"
-    Name="${var.prefix}-load-balancer"
+    Name = "${var.prefix}-alb"
   }
 }
+
+
+resource "aws_alb_target_group" "ecomm_app_group" {
+  name     = "terraform-example-alb-target"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = var.ecomm_vpc_id
+  stickiness {
+    type = "lb_cookie"
+  }
+  # Alter the destination of the health check to be the login page.
+  health_check {
+    path = "/"
+    port = 443
+  }
+}
+
+
+resource "aws_alb_listener" "ecomm_listener_http" {
+  load_balancer_arn = aws_alb.ecomm_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.ecomm_app_group.arn
+    type             = "forward"
+  }
+}
+
