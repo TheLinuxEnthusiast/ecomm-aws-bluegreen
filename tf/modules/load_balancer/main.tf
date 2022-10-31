@@ -11,7 +11,6 @@ resource "aws_security_group" "lb_security_group" {
     to_port          = 443
     protocol         = "tcp"
     cidr_blocks      = [var.ecomm_vpc_cidr]
-    ipv6_cidr_blocks = [var.ecomm_vpc_ipv6_cidr]
   }
 
   ingress {
@@ -20,7 +19,6 @@ resource "aws_security_group" "lb_security_group" {
     to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = [var.ecomm_vpc_cidr]
-    ipv6_cidr_blocks = [var.ecomm_vpc_ipv6_cidr]
   }
 
   egress {

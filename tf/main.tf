@@ -29,8 +29,6 @@ module "vpc" {
   cidr = var.ecomm_vpc_cidr
 
   azs = var.azs
-  #private_subnets = ["${var.ecomm_private_subnet_1}", "${var.ecomm_private_subnet_2}"]
-  #public_subnets  = ["${var.ecomm_public_subnet_1}", "${var.ecomm_public_subnet_2}"]
   private_subnets = var.ecomm_private_subnets
   public_subnets  = var.ecomm_public_subnets
 
@@ -43,6 +41,7 @@ module "vpc" {
   }
 }
 
+# Create ec2 launch configuration and autoscaling group
 module "ec2_autoscaling_config" {
   source          = "./modules/ec2_instance"
   instance_size   = var.instance_size
@@ -50,7 +49,7 @@ module "ec2_autoscaling_config" {
   private_subnets = module.vpc.private_subnets
 }
 
-/*
+# Front end load balancer for ecomm site
 module "load_balancer_config" {
   source              = "./modules/load_balancer"
   prefix              = var.prefix
@@ -58,6 +57,4 @@ module "load_balancer_config" {
   public_subnets      = module.vpc.public_subnets
   ecomm_vpc_id        = module.vpc.vpc_id
   ecomm_vpc_cidr      = module.vpc.vpc_cidr_block
-  ecomm_vpc_ipv6_cidr = module.vpc.vpc_ipv6_cidr_block
 }
-*/

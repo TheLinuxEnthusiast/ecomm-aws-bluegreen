@@ -8,4 +8,3 @@ variable "public_subnets" {
 }
 variable "ecomm_vpc_id" {}
 variable "ecomm_vpc_cidr" {}
-variable "ecomm_vpc_ipv6_cidr" {}
