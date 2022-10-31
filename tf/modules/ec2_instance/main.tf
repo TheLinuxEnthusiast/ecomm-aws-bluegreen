@@ -7,8 +7,8 @@ resource "aws_security_group" "ecomm_sg" {
 
   ingress {
     description      = "Inbound access from public subnet"
-    from_port        = 443
-    to_port          = 443
+    from_port        = 80
+    to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = var.public_subnets
   }

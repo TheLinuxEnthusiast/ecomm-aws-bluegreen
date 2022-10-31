@@ -6,19 +6,11 @@ resource "aws_security_group" "lb_security_group" {
   vpc_id      = var.ecomm_vpc_id
 
   ingress {
-    description      = "TLS from VPC"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = [var.ecomm_vpc_cidr]
-  }
-
-  ingress {
     description      = "HTTP from VPC"
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
-    cidr_blocks      = [var.ecomm_vpc_cidr]
+    cidr_blocks      = ["0.0.0.0/0"]
   }
 
   egress {
@@ -38,7 +30,7 @@ resource "aws_security_group" "lb_security_group" {
 resource "aws_alb" "ecomm_alb" {
   name            = "${var.prefix}-alb"
   security_groups = ["${aws_security_group.lb_security_group.id}"]
-  subnets         = var.private_subnets
+  subnets         = var.public_subnets
   tags = {
     Name = "${var.prefix}-alb"
   }
@@ -47,8 +39,9 @@ resource "aws_alb" "ecomm_alb" {
 
 resource "aws_alb_target_group" "ecomm_app_group" {
   name     = "terraform-example-alb-target"
-  port     = 443
-  protocol = "HTTPS"
+  port     = 80
+  protocol = "HTTP"
+
   vpc_id   = var.ecomm_vpc_id
   stickiness {
     type = "lb_cookie"
@@ -56,7 +49,7 @@ resource "aws_alb_target_group" "ecomm_app_group" {
   # Alter the destination of the health check to be the login page.
   health_check {
     path = "/"
-    port = 443
+    port = 80
   }
 }
 
@@ -72,3 +65,16 @@ resource "aws_alb_listener" "ecomm_listener_http" {
   }
 }
 
+/*
+resource "aws_alb_target_group_attachment" "targetA" {
+	target_group_arn = aws_alb_target_group.ecomm_app_group.arn
+	port = 80
+	target_id = var.targetA_id
+}
+
+resource "aws_alb_target_group_attachment" "targetB" {
+	target_group_arn = aws_alb_target_group.ecomm_app_group.arn
+	port = 80
+	target_id = var.targetB_id
+}
+*/
