@@ -18,3 +18,4 @@ variable "instance_size" {}
 variable "azs" {
   type = list(string)
 }
+variable "ec2_key_name" {}

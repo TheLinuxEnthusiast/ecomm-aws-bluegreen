@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 LABEL version="1.0"
-LABEL description="Simple PHP based ecommerce application container running on port 80 & 443"
+LABEL description="Simple PHP based ecommerce application container running on port 80"
 LABEL author="Darren Foley"
 LABEL email="darrenfoley015@gmail.com"
 
@@ -19,19 +19,6 @@ RUN apt install -y apache2 php php-mysql
 
 RUN apt clean
 
-RUN a2enmod ssl && a2enmod rewrite
-
-# Create openssl cert
-RUN mkdir -p /etc/apache2/certificate && \
-	openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 \
-	-nodes -out /etc/apache2/certificate/apache-certificate.crt \
-	-keyout /etc/apache2/certificate/apache.key \
-	-subj "/C=IE/ST=Dublin/L=Dublin/O=Custom/OU=DevOPS/CN=172.20.0.2"
-
-
-# Edit the /etc/apache2/sites-enabled/000-default.conf file
-COPY ./000-default.conf /etc/apache2/sites-enabled/000-default.conf
-
 # Change configuration for /etc/apache2/apache2.conf
 RUN sed -i "/^<Directory \/var\/www\/>/a\\\tOrder allow,deny" /etc/apache2/apache2.conf && \
 	sed -i "/^<Directory \/var\/www\/>/a\\\tallow from all" /etc/apache2/apache2.conf && \
@@ -44,7 +31,6 @@ COPY . /var/www/html/
 
 
 EXPOSE 80
-EXPOSE 443
 
 RUN /sbin/service apache2 restart
 
