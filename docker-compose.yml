@@ -5,6 +5,7 @@ services:
        image: 275562404519.dkr.ecr.eu-west-1.amazonaws.com/mariadb:latest 
        ports:
          - "3306:3306"
+       restart: always
        environment:
          MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
        volumes:
@@ -20,6 +21,7 @@ services:
          - "80:80"
        depends_on:
          - ecomm-backend
+       restart: always
        environment:
          DB_HOSTNAME: "172.20.0.3"
        networks:
