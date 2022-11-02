@@ -66,15 +66,37 @@ resource "aws_alb_listener" "ecomm_listener_http" {
 }
 
 /*
+data "aws_instance" "get_instance_id_A" {
+	filter {
+    		name   = "tag:Name"
+    		values = ["ecomm-instance"]
+  	}
+	filter {
+		name = "availability-zone"
+		values = ["eu-west-1a"]
+	}
+}
+
+data "aws_instance" "get_instance_id_B" {
+	filter {
+		name = "tag:Name"
+		values = ["ecomm-instance"]
+	}
+	filter {
+                name = "availability-zone"
+                values = ["eu-west-1b"]
+        }
+}
+
 resource "aws_alb_target_group_attachment" "targetA" {
 	target_group_arn = aws_alb_target_group.ecomm_app_group.arn
 	port = 80
-	target_id = var.targetA_id
+	target_id = data.aws_instance.get_instance_id_A.id
 }
 
 resource "aws_alb_target_group_attachment" "targetB" {
 	target_group_arn = aws_alb_target_group.ecomm_app_group.arn
 	port = 80
-	target_id = var.targetB_id
+	target_id = data.aws_instance.get_instance_id_B.id
 }
 */

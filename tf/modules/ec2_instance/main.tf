@@ -70,6 +70,12 @@ resource "aws_autoscaling_group" "ecomm_autoscaling_group" {
   lifecycle {
     create_before_destroy = true
   }
+
+  tag {
+    key                 = "Name"
+    value               = "ecomm-instance"
+    propagate_at_launch = true
+  }
 }
 
 
