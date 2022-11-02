@@ -21,9 +21,9 @@ provider "aws" {
 }
 
 resource "random_string" "suffix" {
-  length           = 8
-  special          = false
-  upper = true
+  length  = 8
+  special = false
+  upper   = true
   keepers = {
     rand_id = "1000"
   }

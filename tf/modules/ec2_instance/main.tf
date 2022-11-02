@@ -40,7 +40,7 @@ data "aws_ami" "ecomm_ami" {
 
   filter {
     name   = "name"
-    values = ["ecomm-app-image*"]
+    values = ["ecomm-app-*"]
   }
 }
 
@@ -65,8 +65,9 @@ resource "aws_autoscaling_group" "ecomm_autoscaling_group" {
   launch_configuration = aws_launch_configuration.ecomm_launch_config.name
   vpc_zone_identifier = var.private_subnets 
   min_size             = 2
-  max_size             = 3
+  max_size             = 2 
   wait_for_elb_capacity = 2 
+  health_check_grace_period = 120
 
   lifecycle {
     create_before_destroy = true
