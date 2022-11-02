@@ -22,7 +22,7 @@ resource "aws_security_group" "lb_security_group" {
   }
 
   tags = {
-    Name = "${var.prefix}-alb-security-group"
+    Name = "${var.prefix}-alb-security-group-${var.suffix}"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_alb" "ecomm_alb" {
   security_groups = ["${aws_security_group.lb_security_group.id}"]
   subnets         = var.public_subnets
   tags = {
-    Name = "${var.prefix}-alb"
+    Name = "${var.prefix}-alb-${var.suffix}"
   }
 }
 
@@ -65,11 +65,10 @@ resource "aws_alb_listener" "ecomm_listener_http" {
   }
 }
 
-/*
 data "aws_instance" "get_instance_id_A" {
 	filter {
     		name   = "tag:Name"
-    		values = ["ecomm-instance"]
+    		values = ["ecomm-instance-${var.suffix}"]
   	}
 	filter {
 		name = "availability-zone"
@@ -80,7 +79,7 @@ data "aws_instance" "get_instance_id_A" {
 data "aws_instance" "get_instance_id_B" {
 	filter {
 		name = "tag:Name"
-		values = ["ecomm-instance"]
+		values = ["ecomm-instance-${var.suffix}"]
 	}
 	filter {
                 name = "availability-zone"
@@ -99,4 +98,3 @@ resource "aws_alb_target_group_attachment" "targetB" {
 	port = 80
 	target_id = data.aws_instance.get_instance_id_B.id
 }
-*/

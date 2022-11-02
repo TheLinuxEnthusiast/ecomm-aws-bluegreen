@@ -9,3 +9,4 @@ variable "private_subnets" {
 }
 variable "ecomm_vpc_id" {}
 variable "ec2_key_name" {}
+variable "suffix" {}

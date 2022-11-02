@@ -1,7 +1,7 @@
 
 # Security group for launch configuration
 resource "aws_security_group" "ecomm_sg" {
-  name        = "allow_tls"
+  name        = "allow_ingress"
   description = "Allow inbound traffic from public subnets"
   vpc_id      = var.ecomm_vpc_id
 
@@ -30,7 +30,7 @@ resource "aws_security_group" "ecomm_sg" {
   }
 
   tags = {
-    Name = "${var.prefix}-allow_tls"
+    Name = "${var.prefix}-allow_ingress"
   }
 }
 
@@ -66,6 +66,7 @@ resource "aws_autoscaling_group" "ecomm_autoscaling_group" {
   vpc_zone_identifier = var.private_subnets 
   min_size             = 2
   max_size             = 3
+  wait_for_elb_capacity = 2 
 
   lifecycle {
     create_before_destroy = true
@@ -73,7 +74,7 @@ resource "aws_autoscaling_group" "ecomm_autoscaling_group" {
 
   tag {
     key                 = "Name"
-    value               = "ecomm-instance"
+    value               = "ecomm-instance-${var.suffix}"
     propagate_at_launch = true
   }
 }

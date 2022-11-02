@@ -8,6 +8,7 @@ variable "public_subnets" {
 }
 variable "ecomm_vpc_id" {}
 variable "ecomm_vpc_cidr" {}
+variable "suffix" {}
 /*
 variable "targetA_id" {}
 variable "targetB_id" {}
