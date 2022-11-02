@@ -40,7 +40,7 @@ data "aws_ami" "ecomm_ami" {
 
   filter {
     name   = "name"
-    values = ["ecomm-app-*"]
+    values = ["ecomm-app-image*"]
   }
 }
 
