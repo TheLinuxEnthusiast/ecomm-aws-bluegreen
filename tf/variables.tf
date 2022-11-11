@@ -14,8 +14,11 @@ variable "ecomm_private_subnets" {
   type = list(string)
 }
 
-variable "instance_size" {}
+#variable "instance_size" {}
 variable "azs" {
   type = list(string)
 }
+#variable "ec2_key_name" {}
+
+variable "instance_size" {}
 variable "ec2_key_name" {}

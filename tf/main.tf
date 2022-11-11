@@ -15,7 +15,6 @@ terraform {
   }
 }
 
-
 provider "aws" {
   region = "eu-west-1"
 }
@@ -50,19 +49,6 @@ module "vpc" {
   }
 }
 
-# Create ec2 launch configuration and autoscaling group
-module "ec2_autoscaling_config" {
-  source          = "./modules/ec2_instance"
-  instance_size   = var.instance_size
-  prefix          = var.prefix
-  suffix          = random_string.suffix.result
-  ecomm_vpc_id    = module.vpc.vpc_id
-  private_subnets = module.vpc.private_subnets
-  public_subnets  = module.vpc.public_subnets_cidr_blocks
-  ec2_key_name    = var.ec2_key_name
-  depends_on      = [module.vpc]
-}
-
 # Front end load balancer for ecomm site
 module "load_balancer_config" {
   source          = "./modules/load_balancer"
@@ -72,5 +58,18 @@ module "load_balancer_config" {
   public_subnets  = module.vpc.public_subnets
   ecomm_vpc_id    = module.vpc.vpc_id
   ecomm_vpc_cidr  = module.vpc.vpc_cidr_block
-  depends_on      = [module.ec2_autoscaling_config]
+  depends_on      = [module.vpc]
 }
+
+module "ecs" {
+  source                 = "./modules/ecs"
+  prefix                 = var.prefix
+  suffix                 = random_string.suffix.result
+  ecomm_vpc_id           = module.vpc.vpc_id
+  private_subnets        = module.vpc.private_subnets
+  aws_security_group_alb = module.load_balancer_config.ecomm_alb_security_group_id
+  alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn
+  ecomm_alb_listener     = module.load_balancer_config.ecomm_alb_listener
+  depends_on             = [module.load_balancer_config]
+}
+
