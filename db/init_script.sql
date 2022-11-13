@@ -1,8 +1,8 @@
 CREATE DATABASE IF NOT EXISTS ecomdb;
 
-CREATE USER IF NOT EXISTS 'ecomuser'@'172.20.0.2' IDENTIFIED BY 'ecompassword';
+CREATE USER IF NOT EXISTS 'ecomuser'@'127.0.0.1' IDENTIFIED BY 'ecompassword';
 
-GRANT ALL PRIVILEGES ON ecomdb.* TO 'ecomuser'@'172.20.0.2';
+GRANT ALL PRIVILEGES ON ecomdb.* TO 'ecomuser'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 
