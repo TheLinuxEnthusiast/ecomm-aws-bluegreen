@@ -8,3 +8,7 @@ tf/terraform.tfstate.backup
 packer/files/config
 packer/files/credentials
 tf/terraform.tfstate.d/
+codebuild_build.sh
+bk_*
+output/
+test_*
