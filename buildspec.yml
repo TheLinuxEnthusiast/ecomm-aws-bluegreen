@@ -32,8 +32,9 @@ phases:
     - echo "Build started on $(date)"
     - echo "Building the Docker image for ecomm app and mariadb backend..." 
     # Build Docker Images
-    - docker build -t ${IMAGE_URI1}:${IMAGE_TAG} ./Dockerfile
-    - docker build -t ${IMAGE_URI2}:${IMAGE_TAG} ./db/Dockerfile
+    - docker build -t ${IMAGE_URI1}:${IMAGE_TAG} -f ./Dockerfile .
+    - cd db/
+    - docker build -t ${IMAGE_URI2}:${IMAGE_TAG} -f ./Dockerfile .
     # Add tags for images before pushing to ECR
     - docker tag ${IMAGE_URI1}:${IMAGE_TAG} ${IMAGE_URI1}:latest 
     - docker tag ${IMAGE_URI2}:${IMAGE_TAG} ${IMAGE_URI2}:latest
