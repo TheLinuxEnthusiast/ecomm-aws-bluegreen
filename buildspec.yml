@@ -35,6 +35,7 @@ phases:
     - docker build -t ${IMAGE_URI1}:${IMAGE_TAG} -f ./Dockerfile .
     - cd db/
     - docker build -t ${IMAGE_URI2}:${IMAGE_TAG} -f ./Dockerfile .
+    - cd ..
     # Add tags for images before pushing to ECR
     - docker tag ${IMAGE_URI1}:${IMAGE_TAG} ${IMAGE_URI1}:latest 
     - docker tag ${IMAGE_URI2}:${IMAGE_TAG} ${IMAGE_URI2}:latest
