@@ -44,23 +44,53 @@ resource "aws_ecs_task_definition" "ecomm_app_task" {
   cpu = 512
   memory = 1024
   container_definitions    = <<EOF
-	[
-    	{
-      	"name"      : "ecomm-lamp-app",
-      	"image"     : "275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:latest",
-      	"cpu"       : 512,
-      	"memory"    : 1024,
-      	"essential" : true,
-	"networkMode": "awsvpc",
-      	"portMappings" : [
-        	{
-          	"containerPort" : 80,
-          	"hostPort"      : 80
-        	}
-      		]
-    		}
-  	]
-	EOF
+   [
+    {
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ecomm-test",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "protocol": "tcp",
+          "containerPort": 80
+        }
+      ],
+      "cpu": 256,
+      "memoryReservation": 512,
+      "image": "275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:latest",
+      "essential": true,
+      "name": "ecomm-lamp-app"
+    },
+    {
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ecomm-test",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [
+        {
+          "hostPort": 3306,
+          "protocol": "tcp",
+          "containerPort": 3306
+        }
+      ],
+      "cpu": 256,
+      "memoryReservation": 512,
+      "image": "275562404519.dkr.ecr.eu-west-1.amazonaws.com/mariadb:latest",
+      "essential": true,
+      "name": "ecomm-db"
+    }
+   ]
+   EOF
   tags                     = local.tags
 }
 
