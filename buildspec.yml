@@ -9,11 +9,7 @@ env:
 
 phases: 
   install:
-    #runtime-versions:
-    #    docker: 20  
     commands: 
-      #  - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
-      #  - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
       # Install Hadolint
       - wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
       - chmod +x /bin/hadolint
@@ -36,8 +32,8 @@ phases:
     - echo "Build started on $(date)"
     - echo "Building the Docker image for ecomm app and mariadb backend..." 
     # Build Docker Images
-    - docker build -t ${IMAGE_URI1}:${IMAGE_TAG} .
-    - docker build -t ${IMAGE_URI2}:${IMAGE_TAG} .
+    - docker build -t ${IMAGE_URI1}:${IMAGE_TAG} ./Dockerfile
+    - docker build -t ${IMAGE_URI2}:${IMAGE_TAG} ./db/Dockerfile
     # Add tags for images before pushing to ECR
     - docker tag ${IMAGE_URI1}:${IMAGE_TAG} ${IMAGE_URI1}:latest 
     - docker tag ${IMAGE_URI2}:${IMAGE_TAG} ${IMAGE_URI2}:latest
