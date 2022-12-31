@@ -143,3 +143,6 @@ A packer configuration was also created to create a dedicated AMI for running th
 The build expects a packer/scripts directory containing a script called bootstrap.sh. This loads all required dependencies for running docker-compose. In addition, the packer/files directory is expected which will contain the access/secret key of the user that will pull container images from ECR. It expects a config & credentials file. 
 
 
+# buildspec.yml file
+
+This file contains the instructions for building and pushing containers to ECR
