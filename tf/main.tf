@@ -63,6 +63,7 @@ module "load_balancer_config" {
 
 module "ecs" {
   source                 = "./modules/ecs"
+  count = var.is_blue ? 1: 0
   prefix                 = var.prefix
   suffix                 = random_string.suffix.result
   ecomm_vpc_id           = module.vpc.vpc_id
@@ -73,3 +74,16 @@ module "ecs" {
   depends_on             = [module.load_balancer_config]
 }
 
+
+module "ecs" {
+  source                 = "./modules/ecs"
+  count = var.is_green ? 1: 0
+  prefix                 = var.prefix
+  suffix                 = random_string.suffix.result
+  ecomm_vpc_id           = module.vpc.vpc_id
+  private_subnets        = module.vpc.private_subnets
+  aws_security_group_alb = module.load_balancer_config.ecomm_alb_security_group_id
+  alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn
+  ecomm_alb_listener     = module.load_balancer_config.ecomm_alb_listener
+  depends_on             = [module.load_balancer_config]
+}
