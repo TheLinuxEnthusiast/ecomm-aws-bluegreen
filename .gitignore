@@ -12,3 +12,4 @@ codebuild_build.sh
 bk_*
 output/
 test_*
+process.yml
