@@ -5,6 +5,6 @@ ENV MYSQL_USER=ecomuser \
     MYSQL_DATABASE=ecomdb \
     MYSQL_ROOT_PASSWORD=12345
 
-COPY ./init_script.sql /docker-entrypoint-initdb.d
+COPY ./db/init_script.sql /docker-entrypoint-initdb.d
 
 EXPOSE 3306
