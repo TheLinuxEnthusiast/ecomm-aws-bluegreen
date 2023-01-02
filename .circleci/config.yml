@@ -47,6 +47,6 @@ workflows:
           dockerfile: Dockerfile
           registry-id: AWS_ECR_REGISTRY_ID
           path: .
-          region: AWS_DEFAULT_EGION
+          region: ${AWS_DEFAULT_REGION}
           repo: ecomm-lamp-app
           tag: "latest,${CIRCLE_SHA1:0:7}"
