@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-ecr: circleci/aws-ecr@8.2.1
+
 jobs:
   lint_dockerfiles:
      docker:
@@ -22,7 +25,7 @@ jobs:
             echo "Linting Dockerfiles has failed"
          when: on_fail
   
-  build_and_push_containers:
+  xxx_build_and_push_containers:
      docker:
       - image: docker:20.10.22-git
      steps:
@@ -34,8 +37,16 @@ jobs:
             aws --version
             
 
-
 workflows:
   main-workflow:
     jobs:
       - lint_dockerfiles
+      - aws-ecr/build-and-push-image:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          dockerfile: Dockerfile
+          registry-id: AWS_ECR_REGISTRY_ID
+          path: .
+          region: AWS_DEFAULT_EGION
+          repo: ecomm-lamp-app
+          tag: "latest,${CIRCLE_SHA1:0:7}"
