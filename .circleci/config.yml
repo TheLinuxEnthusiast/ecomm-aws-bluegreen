@@ -51,7 +51,7 @@ workflows:
           repo: ecomm-lamp-app
           tag: "latest,${CIRCLE_SHA1:0:7}"
       - aws-ecr/build-and-push-image:
-          path: db/
+          path: ./db
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           dockerfile: Dockerfile
