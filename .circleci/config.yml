@@ -24,17 +24,6 @@ jobs:
          command: |
             echo "Linting Dockerfiles has failed"
          when: on_fail
-  
-  xxx_build_and_push_containers:
-     docker:
-      - image: docker:20.10.22-git
-     steps:
-       - checkout
-       - run: 
-          name: "Authenticate with ECR"
-          command: |
-            echo "Authenticating with ECR"
-            aws --version
             
 
 workflows:
