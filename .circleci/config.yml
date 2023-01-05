@@ -1,5 +1,8 @@
 version: 2.1
 
+# TODO: Create smoke and rollback steps
+# TODO: Allow toggle between green and blue (create toggle file in S3 to maintain state)
+
 orbs:
   aws-ecr: circleci/aws-ecr@8.2.1
 
@@ -33,11 +36,32 @@ commands:
          command: |
              echo "Terraform failed to install....."
          when: on_fail
+ 
+  smoke_test:
+    steps:
+     - run:
+        name: "curl endpoint and check if valid HTTP 200 is returned"
+        command: |
+         ## TODO
+         curl "" 
+
+  rollback_deployment:
+    steps:
+      - run:
+         name: "Rollback Terraform to the original state"
+         working_directory: ~/project/tf
+         command: |
+           terraform apply -var-file=variables/development.tfvars -var is_green="false" -auto-approve
+      - run:
+         name: "Failed to rollback"
+         command: |
+           echo "Failed to rollback, manual intervention required"
+         when: on_fail
 
 jobs:
   lint_dockerfiles:
      docker:
-       - image: circleci/python:3.9
+      - image: circleci/python:3.9
      steps:
       - checkout
       - run: 
@@ -55,15 +79,94 @@ jobs:
          command: |
             echo "Linting Dockerfiles has failed"
          when: on_fail
-            
-  deploy_green_env:
+
+  deploy_new_env:
     docker:
       - image: circleci/python:3.9
     steps:
       - checkout
       - install_terraform
+      - run:
+         name: "Initialize Terraform"
+         working_directory: ~/project/tf
+         command: |
+           terraform init
+      - run:
+         name: "Deploy Green ECS Service"
+         working_directory: ~/project/tf
+         command: |
+           terraform apply -var-file=variables/development.tfvars -var is_green="true" -auto-approve
+      - run:
+         name: "Failed to Deploy Green Environment"
+         command: |
+           echo "Failed to deploy Green Environment"
+         when: on_fail
 
+  apply_traffic_90_10:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - install_terraform
+      - run:
+         name: "Initialize Terraform"
+         working_directory: ~/project/tf
+         command: |
+           terraform init
+      - run:
+         name: "Move 10% of Traffic to Green"
+         working_directory: ~/project/tf
+         command: |
+           terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="blue-90" -auto-approve
+      - run:
+         name: "Failed to redistribute traffic 90/10"
+         command: |
+            echo "Failed to redistribute traffic 90/10, rolling back to previous state"
+         when: on_fail
 
+  apply_traffic_0_100:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - install_terraform
+      - run:
+         name: "Initialize Terraform"
+         working_directory: ~/project/tf
+         command: |
+            terraform init
+      - run:
+         name: "Move 10% of Traffic to Green"
+         working_directory: ~/project/tf
+         command: |
+            terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="green" -auto-approve
+      - run:
+         name: "Failed to redistribute traffic"
+         command: |
+            echo "Failed to redistribute traffic, rolling back to previous state"
+         when: on_fail
+
+  destroy_old_env:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - install_terraform
+      - run:
+         name: "Initialize Terraform"
+         working_directory: ~/project/tf
+         command: |
+            terraform init
+      - run:
+         name: "Destroy old environment"
+         working_directory: ~/project/tf
+         command: |
+            terraform apply -var-file=variables/development.tfvars -var is_green="true" -var is_blue="false" -var traffic_distribution="green" -auto-approve
+      - run:
+         name: "Failed to redistribute traffic"
+         command: |
+            echo "Failed to redistribute traffic, rolling back to previous state"
+         when: on_fail
 
 
 workflows:
@@ -89,4 +192,7 @@ workflows:
           region: ${AWS_DEFAULT_REGION}
           repo: mariadb
           tag: "latest,${CIRCLE_SHA1:0:7}"
-      - deploy_green_env
+      - deploy_new_env
+      - apply_traffic_90_10
+      - apply_traffic_0_100
+      - destroy_old_env
