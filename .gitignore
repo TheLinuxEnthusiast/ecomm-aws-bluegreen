@@ -1,5 +1,6 @@
 .DS_Store
 .idea/
+test/*
 test/
 tf/.terraform/
 tf/terraform.tfstate
@@ -13,3 +14,4 @@ bk_*
 output/
 test_*
 process.yml
+

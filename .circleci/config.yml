@@ -3,10 +3,41 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@8.2.1
 
+commands:
+  install_terraform:
+    parameters:
+      AWS_ACCESS_KEY_ID:
+        default: "${AWS_ACCESS_KEY_ID}"
+        type: string
+      AWS_SECRET_ACCESS_KEY:
+        default: "${AWS_SECRET_ACCESS_KEY}"
+        type: string
+    steps:
+      - run:
+         name: "Install Terraform Open Source"
+         command: |
+            sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+            sudo apt-get install -y lsb-release && sudo apt-get clean all
+            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+            sudo apt update && sudo apt install -y terraform
+
+            terraform -help
+
+            if [ "$?" != "0" ];then
+              exit 1
+            fi
+      - run:
+         name: "Failed to install Terraform"
+         command: |
+             echo "Terraform failed to install....."
+         when: on_fail
+
 jobs:
   lint_dockerfiles:
      docker:
-       - image: circleci/python:3.9-buster-node-browsers-legacy
+       - image: circleci/python:3.9
      steps:
       - checkout
       - run: 
@@ -25,6 +56,15 @@ jobs:
             echo "Linting Dockerfiles has failed"
          when: on_fail
             
+  deploy_green_env:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - install_terraform
+
+
+
 
 workflows:
   main-workflow:
@@ -49,3 +89,4 @@ workflows:
           region: ${AWS_DEFAULT_REGION}
           repo: mariadb
           tag: "latest,${CIRCLE_SHA1:0:7}"
+      - deploy_green_env
