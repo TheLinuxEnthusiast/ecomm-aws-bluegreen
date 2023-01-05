@@ -28,7 +28,7 @@ resource "aws_ecs_service" "ecomm_service_green" {
   }
 
   load_balancer {
-    target_group_arn = var.ecomm_app_group_green.arn #var.alb_target_group_arn
+    target_group_arn = var.ecomm_app_group_green #var.alb_target_group_arn
     container_name   = "ecomm-lamp-app"
     container_port   = 80
   }
