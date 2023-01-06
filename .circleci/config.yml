@@ -82,6 +82,7 @@ commands:
          name: "Rollback Terraform to its original state"
          working_directory: ~/project/tf
          command: |
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
              terraform apply -var-file=variables/development.tfvars -auto-approve
            else
@@ -152,6 +153,7 @@ jobs:
          working_directory: ~/project/tf
          command: |
            export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ];then
               terraform apply -var-file=variables/development.tfvars -var is_green="true" -auto-approve
            else
@@ -180,6 +182,7 @@ jobs:
          working_directory: ~/project/tf
          command: |
            export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
                terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="blue-90" -auto-approve
            else
@@ -208,6 +211,7 @@ jobs:
          working_directory: ~/project/tf
          command: |
            export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
               terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="green" -auto-approve
            else
@@ -236,6 +240,7 @@ jobs:
          working_directory: ~/project/tf
          command: |
            export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
               terraform apply -var-file=variables/development.tfvars -var is_green="true" -var is_blue="false" -var traffic_distribution="green" -auto-approve
            else
@@ -244,6 +249,7 @@ jobs:
       - run:
          name: "Update toggle file"
          command: |
+           echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
               echo "green" > ~/project/toggle.txt
            else
@@ -312,7 +318,7 @@ workflows:
   
   test-deploy-new-env:
     jobs:
-      - destroy_old_env:
+      - deploy_new_env:
           filters:
             branches:
               only: fb-terraform
