@@ -99,7 +99,7 @@ commands:
       - run:
          name: "curl endpoint and check if valid HTTP 200 is returned"
          command: |
-          export HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $(terraform output -raw lb_dns_name))
+          export HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $(terraform output -raw alb_dns_name))
          
           if [ ${HTTP_STATUS} != "200" ];
           then
@@ -318,8 +318,13 @@ workflows:
   
   test-deploy-new-env:
     jobs:
-      - deploy_new_env:
+      - apply_traffic_90_10:
           filters:
             branches:
               only: fb-terraform
+      
+      #- apply_traffic_0_100:
+      #    filters:
+      #      branches:
+      #        only: fb-terraform
        
