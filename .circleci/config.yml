@@ -70,18 +70,15 @@ commands:
          command: |
              echo "Terraform failed to install....."
          when: on_fail
-
+  
   rollback_deployment:
     steps:
       - run:
-         name: "Get current toggle value"
-         working_directory: ~/project
-         command: |
-           export ENV_TOGGLE=$(cat ./toggle.txt)
-      - run:
          name: "Rollback Terraform to its original state"
+         when: on_fail
          working_directory: ~/project/tf
          command: |
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
            echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
              terraform apply -var-file=variables/development.tfvars -auto-approve
@@ -90,11 +87,11 @@ commands:
            fi
       - run:
          name: "Failed to rollback"
+         when: on_fail
          command: |
            echo "Failed to rollback, manual intervention required"
-         when: on_fail
 
-  smoke_test:
+  smoke_test_curl:
     steps:
       - run:
          name: "curl endpoint and check if valid HTTP 200 is returned"
@@ -102,7 +99,7 @@ commands:
          command: |
           export HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $(terraform output -raw alb_dns_name))
          
-          if [ ${HTTP_STATUS} != "200" ];
+          if [ "${HTTP_STATUS}" != "200" ];
           then
              exit 1
           fi
@@ -111,8 +108,7 @@ commands:
          command: |
             echo "Smoke test failed, roll back to previous state"
          when: on_fail
-      - rollback_deployment:
-         when: on_fail
+      - rollback_deployment
 
   wait_60_sec:
     steps:
@@ -173,6 +169,7 @@ jobs:
          command: |
            echo "Failed to deploy new Environment"
          when: on_fail
+      - rollback_deployment
 
   apply_traffic_90_10:
     docker:
@@ -203,6 +200,17 @@ jobs:
          command: |
             echo "Failed to redistribute traffic 90/10, rolling back to previous state"
          when: on_fail
+      - rollback_deployment
+
+  smoke_test:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - install_terraform
+      - copy_toggle_from_s3
+      - smoke_test_curl
+      - rollback_deployment
 
   apply_traffic_0_100:
     docker:
@@ -233,6 +241,7 @@ jobs:
          command: |
             echo "Failed to redistribute traffic, rolling back to previous state"
          when: on_fail
+      - rollback_deployment
 
   destroy_old_env:
     docker:
@@ -273,6 +282,7 @@ jobs:
          command: |
             echo "Failed to redistribute traffic, rolling back to previous state"
          when: on_fail
+      - rollback_deployment
 
 
 workflows:
@@ -283,6 +293,7 @@ workflows:
             branches:
               only: master
       - aws-ecr/build-and-push-image:
+          name: "frontend_build"
           path: .
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
@@ -297,6 +308,7 @@ workflows:
             branches:
               only: master
       - aws-ecr/build-and-push-image:
+          name: "mariadb_build"
           path: ./db
           workspace-root: ./db
           aws-access-key-id: AWS_ACCESS_KEY_ID
@@ -315,37 +327,48 @@ workflows:
           filters:
             branches:
               only: master
+          requires: 
+             - mariadb_build
+             - frontend_build
       - apply_traffic_90_10:
           filters:
             branches:
               only: master
+          requires: [deploy_new_env]
+      - smoke_test:
+          filters:
+            branches:
+              only: master
+          requires: [apply_traffic_90_10]
       - apply_traffic_0_100:
           filters:
             branches:
               only: master
+          requires: [smoke_test]
       - destroy_old_env:
           filters:
             branches:
               only: master
+          requires: [apply_traffic_0_100]
   
   test-deploy-new-env:
     jobs:
       - deploy_new_env:
           filters:
             branches:
-              only: fb-terraform
+              only: '/^fb-*$/'
       - apply_traffic_90_10:
           filters:
             branches:
-              only: fb-terraform
+              only: '/^fb-*$/'
           requires: [deploy_new_env]
       - apply_traffic_0_100:
           filters:
             branches:
-              only: fb-terraform
+              only: '/^fb-*$/'
           requires: [apply_traffic_90_10]
       - destroy_old_env:
           filters:
             branches:
-              only: fb-terraform
+              only: '/^fb-*$/'
           requires: [apply_traffic_0_100]
