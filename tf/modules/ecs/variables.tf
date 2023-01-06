@@ -8,4 +8,3 @@ variable "private_subnets" {
 }
 variable "alb_target_group_arn" {}
 variable "ecomm_alb_listener" {}
-

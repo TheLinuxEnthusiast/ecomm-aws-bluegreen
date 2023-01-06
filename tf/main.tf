@@ -33,7 +33,7 @@ resource "random_string" "suffix" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "${var.prefix}-vpc"
+  name = "${var.prefix}-vpc-${random_string.suffix.result}"
   cidr = var.ecomm_vpc_cidr
 
   azs             = var.azs
@@ -44,46 +44,64 @@ module "vpc" {
   enable_vpn_gateway = false
 
   tags = {
-    Environment = terraform.workspace
+    Environment = "${terraform.workspace}"
     Name        = "${var.prefix}-application-${random_string.suffix.result}"
   }
 }
 
 # Front end load balancer for ecomm site
 module "load_balancer_config" {
-  source          = "./modules/load_balancer"
-  prefix          = var.prefix
-  suffix          = random_string.suffix.result
-  private_subnets = module.vpc.private_subnets
-  public_subnets  = module.vpc.public_subnets
-  ecomm_vpc_id    = module.vpc.vpc_id
-  ecomm_vpc_cidr  = module.vpc.vpc_cidr_block
-  depends_on      = [module.vpc]
+  source               = "./modules/load_balancer"
+  prefix               = var.prefix
+  traffic_distribution = var.traffic_distribution
+  suffix               = random_string.suffix.result
+  private_subnets      = module.vpc.private_subnets
+  public_subnets       = module.vpc.public_subnets
+  ecomm_vpc_id         = module.vpc.vpc_id
+  ecomm_vpc_cidr       = module.vpc.vpc_cidr_block
+  depends_on           = [module.vpc]
 }
 
 module "ecs" {
   source                 = "./modules/ecs"
-  count = var.is_blue ? 1: 0
   prefix                 = var.prefix
   suffix                 = random_string.suffix.result
   ecomm_vpc_id           = module.vpc.vpc_id
   private_subnets        = module.vpc.private_subnets
   aws_security_group_alb = module.load_balancer_config.ecomm_alb_security_group_id
-  alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn
+  alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn_blue
   ecomm_alb_listener     = module.load_balancer_config.ecomm_alb_listener
   depends_on             = [module.load_balancer_config]
 }
 
+module "blue" {
+  source               = "./modules/blue"
+  count                = var.is_blue ? 1 : 0
+  type                 = "blue"
+  prefix               = var.prefix
+  suffix               = random_string.suffix.result
+  ecomm_vpc_id         = module.vpc.vpc_id
+  private_subnets      = module.vpc.private_subnets
+  ecomm_app_group_blue = module.load_balancer_config.ecomm_target_group_arn_blue
+  ecs_cluster_id       = module.ecs.ecs_cluster_id
+  task_definition_id   = module.ecs.ecs_task_definition_id
+  security_group_id    = module.ecs.security_group_id
+  ecomm_alb_listener   = module.load_balancer_config.ecomm_alb_listener
+  depends_on           = [module.ecs]
+}
 
-module "ecs" {
-  source                 = "./modules/ecs"
-  count = var.is_green ? 1: 0
-  prefix                 = var.prefix
-  suffix                 = random_string.suffix.result
-  ecomm_vpc_id           = module.vpc.vpc_id
-  private_subnets        = module.vpc.private_subnets
-  aws_security_group_alb = module.load_balancer_config.ecomm_alb_security_group_id
-  alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn
-  ecomm_alb_listener     = module.load_balancer_config.ecomm_alb_listener
-  depends_on             = [module.load_balancer_config]
+module "green" {
+  source                = "./modules/green"
+  count                 = var.is_green ? 1 : 0
+  type                  = "green"
+  prefix                = var.prefix
+  suffix                = random_string.suffix.result
+  ecomm_vpc_id          = module.vpc.vpc_id
+  private_subnets       = module.vpc.private_subnets
+  ecomm_app_group_green = module.load_balancer_config.ecomm_target_group_arn_green
+  ecs_cluster_id        = module.ecs.ecs_cluster_id
+  task_definition_id    = module.ecs.ecs_task_definition_id
+  security_group_id     = module.ecs.security_group_id
+  ecomm_alb_listener    = module.load_balancer_config.ecomm_alb_listener
+  depends_on            = [module.ecs]
 }
