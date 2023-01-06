@@ -351,24 +351,24 @@ workflows:
               only: master
           requires: [apply_traffic_0_100]
   
-  test-deploy-new-env:
-    jobs:
-      - deploy_new_env:
-          filters:
-            branches:
-              only: '/^fb-*$/'
-      - apply_traffic_90_10:
-          filters:
-            branches:
-              only: '/^fb-*$/'
-          requires: [deploy_new_env]
-      - apply_traffic_0_100:
-          filters:
-            branches:
-              only: '/^fb-*$/'
-          requires: [apply_traffic_90_10]
-      - destroy_old_env:
-          filters:
-            branches:
-              only: '/^fb-*$/'
-          requires: [apply_traffic_0_100]
+  # test-deploy-new-env:
+  #   jobs:
+  #     - deploy_new_env:
+  #         filters:
+  #           branches:
+  #             only: '/^fb-*$/'
+  #     - apply_traffic_90_10:
+  #         filters:
+  #           branches:
+  #             only: '/^fb-*$/'
+  #         requires: [deploy_new_env]
+  #     - apply_traffic_0_100:
+  #         filters:
+  #           branches:
+  #             only: '/^fb-*$/'
+  #         requires: [apply_traffic_90_10]
+  #     - destroy_old_env:
+  #         filters:
+  #           branches:
+  #             only: '/^fb-*$/'
+  #         requires: [apply_traffic_0_100]
