@@ -17,6 +17,8 @@ commands:
       - run:
          name: "print out file contents"
          command: |
+           echo "$(pwd)"
+           ls -l
            cat "~/toggle.txt"
       - run:
          name: "Failed to get toggle file from S3"
