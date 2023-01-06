@@ -260,8 +260,7 @@ workflows:
       - lint_dockerfiles:
           filters:
             branches:
-              only:
-                - master
+              only: master
       - aws-ecr/build-and-push-image:
           path: .
           aws-access-key-id: AWS_ACCESS_KEY_ID
@@ -275,8 +274,7 @@ workflows:
             - lint_dockerfiles
           filters:
             branches:
-              only:
-                - master
+              only: master
       - aws-ecr/build-and-push-image:
           path: ./db
           workspace-root: ./db
@@ -291,39 +289,32 @@ workflows:
             - lint_dockerfiles
           filters:
             branches:
-              only:
-                - master
+              only: master
       - deploy_new_env:
           filters:
             branches:
-              only:
-                - master
+              only: master
       - apply_traffic_90_10:
           filters:
             branches:
-              only:
-                - master
+              only: master
       - apply_traffic_0_100:
           filters:
             branches:
-              only:
-                - master
+              only: master
       - destroy_old_env:
           filters:
             branches:
-              only:
-                - master
+              only: master
   
   test-deploy-new-env:
     jobs:
       - lint_dockerfiles:
           filters:
             branches:
-              only:
-                - /^fb-*$/
+              only: /^fb-*$/
       - deploy_new_env:
           filters:
             branches:
-              only:
-                - /^fb-*$/
+              only: /^fb-*$/
        
