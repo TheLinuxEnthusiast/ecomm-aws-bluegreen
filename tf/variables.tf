@@ -31,7 +31,3 @@ variable "traffic_distribution" {
   description = "Levels of traffic distribution"
   type        = string
 }
-
-#variables "alb_target_groups" {
-#  type = list()
-#}
