@@ -75,8 +75,9 @@ commands:
     steps:
       - run:
          name: "Get current toggle value"
+         working_directory: ~/project
          command: |
-           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           export ENV_TOGGLE=$(cat ./toggle.txt)
       - run:
          name: "Rollback Terraform to its original state"
          working_directory: ~/project/tf
@@ -311,7 +312,7 @@ workflows:
   
   test-deploy-new-env:
     jobs:
-      - apply_traffic_0_100:
+      - destroy_old_env:
           filters:
             branches:
               only: fb-terraform
