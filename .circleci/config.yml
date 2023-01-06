@@ -1,12 +1,44 @@
 version: 2.1
 
-# TODO: Create smoke and rollback steps
-# TODO: Allow toggle between green and blue (create toggle file in S3 to maintain state)
-
 orbs:
   aws-ecr: circleci/aws-ecr@8.2.1
+  aws-s3: circleci/aws-s3@3.1
 
 commands:
+  copy_toggle_from_s3:
+    steps:
+      - aws-s3/copy:
+          from: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
+          install-aws-cli: true
+          to: ~/project/toggle.txt
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-region: AWS_DEFAULT_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+      - run:
+         name: "print out file contents"
+         command: |
+           cat "~/project/toggle.txt"
+      - run:
+         name: "Failed to get toggle file from S3"
+         command: |
+             echo "Failed to get toggle file from S3"
+         when: on_fail
+
+  copy_toggle_to_s3:
+    steps:
+      - aws-s3/copy:
+          to: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
+          install-aws-cli: false
+          from: ~/project/toggle.txt
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-region: AWS_DEFAULT_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+      - run:
+         name: "Failed to get toggle file from S3"
+         command: |
+             echo "Failed to get toggle file from S3"
+         when: on_fail
+
   install_terraform:
     parameters:
       AWS_ACCESS_KEY_ID:
@@ -36,27 +68,47 @@ commands:
          command: |
              echo "Terraform failed to install....."
          when: on_fail
- 
-  smoke_test:
-    steps:
-     - run:
-        name: "curl endpoint and check if valid HTTP 200 is returned"
-        command: |
-         ## TODO
-         curl "" 
 
   rollback_deployment:
     steps:
       - run:
-         name: "Rollback Terraform to the original state"
+         name: "Get current toggle value"
+         command: |
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+      - run:
+         name: "Rollback Terraform to its original state"
          working_directory: ~/project/tf
          command: |
-           terraform apply -var-file=variables/development.tfvars -var is_green="false" -auto-approve
+           if [ "${ENV_TOGGLE}" = "blue" ]; then
+             terraform apply -var-file=variables/development.tfvars -auto-approve
+           else
+             terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="green" -auto-approve
+           fi
       - run:
          name: "Failed to rollback"
          command: |
            echo "Failed to rollback, manual intervention required"
          when: on_fail
+
+  smoke_test:
+    steps:
+      - run:
+         name: "curl endpoint and check if valid HTTP 200 is returned"
+         command: |
+          export HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $(terraform output -raw lb_dns_name))
+         
+          if [ ${HTTP_STATUS} != "200" ];
+          then
+             exit 1
+          fi
+      - run:
+         name: "Smoke test failed, start rollback"
+         command: |
+            echo "Smoke test failed, roll back to previous state"
+         when: on_fail
+      - rollback_deployment:
+         when: on_fail
+
 
 jobs:
   lint_dockerfiles:
@@ -86,6 +138,7 @@ jobs:
     steps:
       - checkout
       - install_terraform
+      - copy_toggle_from_s3
       - run:
          name: "Initialize Terraform"
          working_directory: ~/project/tf
@@ -95,11 +148,16 @@ jobs:
          name: "Deploy Green ECS Service"
          working_directory: ~/project/tf
          command: |
-           terraform apply -var-file=variables/development.tfvars -var is_green="true" -auto-approve
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           if [ "${ENV_TOGGLE}" = "blue" ];then
+              terraform apply -var-file=variables/development.tfvars -var is_green="true" -auto-approve
+           else
+              terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -auto-approve
+           fi
       - run:
-         name: "Failed to Deploy Green Environment"
+         name: "Failed to Deploy new Environment"
          command: |
-           echo "Failed to deploy Green Environment"
+           echo "Failed to deploy new Environment"
          when: on_fail
 
   apply_traffic_90_10:
@@ -108,16 +166,22 @@ jobs:
     steps:
       - checkout
       - install_terraform
+      - copy_toggle_from_s3
       - run:
          name: "Initialize Terraform"
          working_directory: ~/project/tf
          command: |
            terraform init
       - run:
-         name: "Move 10% of Traffic to Green"
+         name: "Move 10% of Traffic to new env"
          working_directory: ~/project/tf
          command: |
-           terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="blue-90" -auto-approve
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           if [ "${ENV_TOGGLE}" = "blue" ]; then
+               terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="blue-90" -auto-approve
+           else
+               terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -var traffic_distribution="green-90" -auto-approve
+           fi
       - run:
          name: "Failed to redistribute traffic 90/10"
          command: |
@@ -130,16 +194,22 @@ jobs:
     steps:
       - checkout
       - install_terraform
+      - copy_toggle_from_s3
       - run:
          name: "Initialize Terraform"
          working_directory: ~/project/tf
          command: |
             terraform init
       - run:
-         name: "Move 10% of Traffic to Green"
+         name: "Move 100% of Traffic to new env"
          working_directory: ~/project/tf
          command: |
-            terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="green" -auto-approve
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           if [ "${ENV_TOGGLE}" = "blue" ]; then
+              terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="green" -auto-approve
+           else
+              terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -var traffic_distribution="blue" -auto-approve
+           fi
       - run:
          name: "Failed to redistribute traffic"
          command: |
@@ -152,6 +222,7 @@ jobs:
     steps:
       - checkout
       - install_terraform
+      - copy_toggle_from_s3
       - run:
          name: "Initialize Terraform"
          working_directory: ~/project/tf
@@ -161,7 +232,21 @@ jobs:
          name: "Destroy old environment"
          working_directory: ~/project/tf
          command: |
-            terraform apply -var-file=variables/development.tfvars -var is_green="true" -var is_blue="false" -var traffic_distribution="green" -auto-approve
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
+           if [ "${ENV_TOGGLE}" = "blue" ]; then
+              terraform apply -var-file=variables/development.tfvars -var is_green="true" -var is_blue="false" -var traffic_distribution="green" -auto-approve
+           else
+              terraform apply -var-file=variables/development.tfvars -var is_green="false" -var is_blue="true" -var traffic_distribution="blue" -auto-approve
+           fi
+      - run:
+         name: "Update toggle file"
+         command: |
+           if [ "${ENV_TOGGLE}" = "blue" ]; then
+              echo "green" > ~/project/toggle.txt
+           else
+              echo "blue" > ~/project/toggle.txt
+           fi
+      - copy_toggle_to_s3
       - run:
          name: "Failed to redistribute traffic"
          command: |
@@ -182,6 +267,12 @@ workflows:
           region: ${AWS_DEFAULT_REGION}
           repo: ecomm-lamp-app
           tag: "latest,${CIRCLE_SHA1:0:7}"
+          requires:
+            - lint_dockerfiles
+          filters:
+            branches:
+              only:
+                - master
       - aws-ecr/build-and-push-image:
           path: ./db
           workspace-root: ./db
@@ -192,7 +283,29 @@ workflows:
           region: ${AWS_DEFAULT_REGION}
           repo: mariadb
           tag: "latest,${CIRCLE_SHA1:0:7}"
-      - deploy_new_env
-      - apply_traffic_90_10
-      - apply_traffic_0_100
-      - destroy_old_env
+          requires:
+            - lint_dockerfiles
+          filters:
+            branches:
+              only:
+                - master
+      - deploy_new_env:
+          filters:
+            branches:
+              only:
+                - master
+      - apply_traffic_90_10:
+          filters:
+            branches:
+              only:
+                - master
+      - apply_traffic_0_100:
+          filters:
+            branches:
+              only:
+                - master
+      - destroy_old_env:
+          filters:
+            branches:
+              only:
+                - master
