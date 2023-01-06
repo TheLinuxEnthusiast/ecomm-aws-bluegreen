@@ -114,6 +114,13 @@ commands:
       - rollback_deployment:
          when: on_fail
 
+  wait_60_sec:
+    steps:
+      - run:
+         name: "Wait 60 seconds"
+         command: |
+           echo "Wait 60 seconds to allow Load balancer and ECS to redistribute traffic"
+           sleep 60
 
 jobs:
   lint_dockerfiles:
@@ -160,6 +167,7 @@ jobs:
            else
               terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -auto-approve
            fi
+      - wait_60_sec
       - run:
          name: "Failed to Deploy new Environment"
          command: |
@@ -189,6 +197,7 @@ jobs:
            else
                terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -var traffic_distribution="green-90" -auto-approve
            fi
+      - wait_60_sec
       - run:
          name: "Failed to redistribute traffic 90/10"
          command: |
@@ -218,6 +227,7 @@ jobs:
            else
               terraform apply -var-file=variables/development.tfvars -var is_blue="true" -var is_green="true" -var traffic_distribution="blue" -auto-approve
            fi
+      - wait_60_sec
       - run:
          name: "Failed to redistribute traffic"
          command: |
@@ -320,13 +330,19 @@ workflows:
   
   test-deploy-new-env:
     jobs:
+      - deploy_new_env:
+          filters:
+            branches:
+              only: fb-terraform
+      - apply_traffic_90_10:
+          filters:
+            branches:
+              only: fb-terraform
+      - apply_traffic_0_100:
+          filters:
+            branches:
+              only: fb-terraform
       - destroy_old_env:
           filters:
             branches:
               only: fb-terraform
-      
-      #- apply_traffic_0_100:
-      #    filters:
-      #      branches:
-      #        only: fb-terraform
-       
