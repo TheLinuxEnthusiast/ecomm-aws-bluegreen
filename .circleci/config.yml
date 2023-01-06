@@ -19,7 +19,7 @@ commands:
          command: |
            echo "$(pwd)"
            ls -l
-           cat "~/toggle.txt"
+           cat ./toggle.txt
       - run:
          name: "Failed to get toggle file from S3"
          command: |
