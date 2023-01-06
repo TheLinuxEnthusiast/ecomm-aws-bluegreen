@@ -250,6 +250,7 @@ jobs:
       - run:
          name: "Update toggle file"
          command: |
+           export ENV_TOGGLE=$(cat ~/project/toggle.txt)
            echo "ENV TOGGLE is set to ${ENV_TOGGLE}"
            if [ "${ENV_TOGGLE}" = "blue" ]; then
               echo "green" > ~/project/toggle.txt
