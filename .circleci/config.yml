@@ -338,11 +338,14 @@ workflows:
           filters:
             branches:
               only: fb-terraform
+          requires: [deploy_new_env]
       - apply_traffic_0_100:
           filters:
             branches:
               only: fb-terraform
+          requires: [apply_traffic_90_10]
       - destroy_old_env:
           filters:
             branches:
               only: fb-terraform
+          requires: [apply_traffic_0_100]
