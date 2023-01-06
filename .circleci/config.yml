@@ -208,9 +208,13 @@ jobs:
     steps:
       - checkout
       - install_terraform
+      - run:
+         name: "Initialize Terraform"
+         working_directory: ~/project/tf
+         command: |
+           terraform init
       - copy_toggle_from_s3
       - smoke_test_curl
-      - rollback_deployment
 
   apply_traffic_0_100:
     docker:
