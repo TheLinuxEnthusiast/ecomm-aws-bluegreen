@@ -10,14 +10,14 @@ commands:
       - aws-s3/copy:
           from: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
           install-aws-cli: true
-          to: ~/project/toggle.txt
+          to: ~/toggle.txt
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-region: AWS_DEFAULT_REGION
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
       - run:
          name: "print out file contents"
          command: |
-           cat "~/project/toggle.txt"
+           cat "~/toggle.txt"
       - run:
          name: "Failed to get toggle file from S3"
          command: |
@@ -29,7 +29,7 @@ commands:
       - aws-s3/copy:
           to: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
           install-aws-cli: false
-          from: ~/project/toggle.txt
+          from: ~/toggle.txt
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-region: AWS_DEFAULT_REGION
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
@@ -309,10 +309,6 @@ workflows:
   
   test-deploy-new-env:
     jobs:
-      - lint_dockerfiles:
-          filters:
-            branches:
-              only: fb-terraform
       - deploy_new_env:
           filters:
             branches:
