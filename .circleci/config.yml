@@ -10,7 +10,7 @@ commands:
       - aws-s3/copy:
           from: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
           install-aws-cli: true
-          to: ~/toggle.txt
+          to: ~/project/toggle.txt
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-region: AWS_DEFAULT_REGION
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
@@ -29,7 +29,7 @@ commands:
       - aws-s3/copy:
           to: 's3://ecomm-terraform-state-df/toggle/toggle.txt'
           install-aws-cli: false
-          from: ~/toggle.txt
+          from: ~/project/toggle.txt
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-region: AWS_DEFAULT_REGION
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
