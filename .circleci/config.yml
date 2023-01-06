@@ -311,7 +311,7 @@ workflows:
   
   test-deploy-new-env:
     jobs:
-      - apply_traffic_90_10:
+      - apply_traffic_0_100:
           filters:
             branches:
               only: fb-terraform
