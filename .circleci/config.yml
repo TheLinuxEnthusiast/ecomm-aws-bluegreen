@@ -320,10 +320,10 @@ workflows:
           filters:
             branches:
               only:
-                - /fb-*/
+                - /^fb-*$/
       - deploy_new_env:
           filters:
             branches:
               only:
-                - /fb-*/
+                - /^fb-*$/
        
