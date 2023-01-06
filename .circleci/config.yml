@@ -312,9 +312,9 @@ workflows:
       - lint_dockerfiles:
           filters:
             branches:
-              only: /^fb-*$/
+              only: fb-terraform
       - deploy_new_env:
           filters:
             branches:
-              only: /^fb-*$/
+              only: fb-terraform
        
