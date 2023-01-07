@@ -12,9 +12,8 @@ Source code was obtained from KodeKloud which is a PHP based ecommerce sample we
 
 ### Project TODOs
 
-1. Parameterize ECR repository names and S3 buckets names for better project flexibility.
-2. Add Route 53 DNS configuration. ALB DNS name is used.
-3. Add configuration for SSL cert for HTTPS, port 80/http is currently used.
+1. Add Route 53 DNS configuration. ALB DNS name is used.
+2. Add configuration for SSL cert for HTTPS, port 80/http is currently used.
 
 <br>
 
@@ -119,7 +118,7 @@ More information can be found on the Terraform website for [Feature Toggles](htt
 
 ### Project setup
 
-**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running as the container names have been hard coded into the task definition. I'm also using a toggle file on S3 to persist the current state. This is simply a text file with the string "blue" or "green" which indicates the current deployment toggle.
+**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running as the container names are referenced in the task definition. I'm also using a toggle file on S3 to persist the current state. This is simply a text file with the string "blue" or "green" which indicates the current deployment toggle.
 
 
 1. Clone the github repository.

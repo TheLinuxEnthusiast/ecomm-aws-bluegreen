@@ -9,3 +9,7 @@ ec2_key_name          = "ec2-key-pair"
 is_green              = false
 is_blue               = true
 traffic_distribution  = "blue"
+ecr_uri               = "275562404519.dkr.ecr.eu-west-1.amazonaws.com"
+frontend_name         = "ecomm-lamp-app"
+backend_name          = "mariadb"
+tag_version           = "latest"

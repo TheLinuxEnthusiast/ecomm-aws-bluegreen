@@ -8,3 +8,8 @@ variable "private_subnets" {
 }
 variable "alb_target_group_arn" {}
 variable "ecomm_alb_listener" {}
+
+variable "ecr_uri" {}
+variable "frontend_name" {}
+variable "backend_name" {}
+variable "tag_version" {}

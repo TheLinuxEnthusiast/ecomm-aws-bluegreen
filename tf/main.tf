@@ -71,6 +71,10 @@ module "ecs" {
   aws_security_group_alb = module.load_balancer_config.ecomm_alb_security_group_id
   alb_target_group_arn   = module.load_balancer_config.ecomm_target_group_arn_blue
   ecomm_alb_listener     = module.load_balancer_config.ecomm_alb_listener
+  ecr_uri                = var.ecr_uri
+  frontend_name          = var.frontend_name
+  backend_name           = var.backend_name
+  tag_version            = var.tag_version
   depends_on             = [module.load_balancer_config]
 }
 
