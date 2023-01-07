@@ -1,16 +1,16 @@
-## Deployment of a containerized e-commerce web application to ECS
+# Deployment of a containerized e-commerce web application to ECS
 
-### Including: Full CI/CD pipeline with Terraform blue/green deployment strategy
+## Including: Full CI/CD pipeline with Terraform blue/green deployment strategy
 
 <br>
 
-#### Introduction
+### Introduction
 
 Source code was obtained from KodeKloud which is a PHP based ecommerce sample web application which can be found on github [here](https://github.com/kodekloudhub/learning-app-ecommerce).
 
 <br>
 
-#### Project TODOs
+### Project TODOs
 
 1. Parameterize ECR repository names and S3 buckets names for better project flexibility.
 2. Add Route 53 DNS configuration. ALB DNS name is used.
@@ -18,7 +18,7 @@ Source code was obtained from KodeKloud which is a PHP based ecommerce sample we
 
 <br>
 
-#### Technologies Used
+### Technologies Used
 
 1. Docker/Dockerhub/docker-compose
 2. Terraform Open Source
@@ -27,7 +27,7 @@ Source code was obtained from KodeKloud which is a PHP based ecommerce sample we
 
 <br>
 
-#### Project Structure
+### Project Structure
 
 | File/Dir Name         | Description                                          |
 |-----------------------|------------------------------------------------------|
@@ -49,7 +49,7 @@ Source code was obtained from KodeKloud which is a PHP based ecommerce sample we
 
 <br>
 
-#### Blue/Green Deployment Strategy and CI/CD
+### Blue/Green Deployment Strategy and CI/CD
 
 ![AWS Blue Green Deployment](/docs/terraform-blue-green.png)
 
@@ -114,11 +114,12 @@ module "green" {
 More information can be found on the Terraform website for [Feature Toggles](https://www.hashicorp.com/blog/terraform-feature-toggles-blue-green-deployments-canary-test) and [Blue/Green Deployment](https://developer.hashicorp.com/terraform/tutorials/aws/blue-green-canary-tests-deployments?utm_medium=WEB_IO&in=terraform%2Faws&utm_offer=ARTICLE_PAGE&utm_source=WEBSITE&utm_content=DOCS).
 
 
+
 <br>
 
-#### Project setup
+### Project setup
 
-**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running. The container names have been hard coded into the task definition. 
+**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running as the container names have been hard coded into the task definition. I'm also using a toggle file on S3 to persist the current state. This is simply a text file with the string "blue" or "green" which indicates the current deployment toggle.
 
 
 1. Clone the github repository.
