@@ -38,6 +38,12 @@ data "aws_iam_role" "exeution_role_arn_ecs" {
   name = "ecsTaskExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "ecomm_application_ecs_logs" {
+  name = "/ecs/ecomm-application"
+
+  tags = local.tags
+}
+
 resource "aws_ecs_task_definition" "ecomm_app_task" {
   family                   = "ecomm-lamp-app"
   network_mode             = "awsvpc"
@@ -50,7 +56,7 @@ resource "aws_ecs_task_definition" "ecomm_app_task" {
       "logConfiguration" : {
         "logDriver" : "awslogs",
         "options" : {
-          "awslogs-group" : "/ecs/ecomm-frontend",
+          "awslogs-group" : "/ecs/ecomm-application",
           "awslogs-region" : "eu-west-1",
           "awslogs-stream-prefix" : "ecs"
         }
@@ -72,7 +78,7 @@ resource "aws_ecs_task_definition" "ecomm_app_task" {
       "logConfiguration" : {
         "logDriver" : "awslogs",
         "options" : {
-          "awslogs-group" : "/ecs/ecomm-backend",
+          "awslogs-group" : "/ecs/ecomm-application",
           "awslogs-region" : "eu-west-1",
           "awslogs-stream-prefix" : "ecs"
         }
