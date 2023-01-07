@@ -96,7 +96,7 @@ We can also choose which resources are created by using a toggle at the module l
 ```
 module "green" {
   source                = "./modules/green"
-  count                 = var.is_green ? 1 : 0 # When is_green is true the count=1 and resource is created, when 0 resource is destroyed
+  count                 = var.is_green ? 1 : 0 # When "is_green" is true the count=1 and resource is created, when 0 resource is destroyed
   type                  = "green"
   prefix                = var.prefix
   suffix                = random_string.suffix.result
@@ -118,19 +118,22 @@ More information can be found on the Terraform website for [Feature Toggles](htt
 
 #### Project setup
 
-**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running. The Container names have been hard coded into the task definition. 
+**Prerequisites** : You'll need to create two ECR repositories in AWS, one for the frontend application and the other for the mariaDB backend. This will be needed before running. The container names have been hard coded into the task definition. 
 
 
 1. Clone the github repository.
 
 ```
+
 > git clone https://github.com/TheLinuxEnthusiast/ecomm-aws-bluegreen.git
 > cd ecomm-aws-bluegreen/
+
 ```
 
 2. Change into the tf/ directory and initialize the project (Change the bucket name for your project otherwise you can remove the remote backend block).
 
 ```
+
 terraform {
 
   backend "s3" {
@@ -146,23 +149,34 @@ terraform {
     }
   }
 }
+
 ```
 
 ```
+
 > cd tf/
 > terraform init
+
 ```
 
 3. Setup an initial blue application by running
 
 ```
+
 > # Blue deployment
 > cd tf/
 > terraform apply -var-file=variables/development.tfvars -auto-approve
+
+```
+
+4. Create Green env and rebalance traffic 
+
+```
 
 > # Create green environment and flip traffic to 90/10 blue/green
 > terraform apply -var-file=variables/development.tfvars -var is_green="true" -var traffic_distribution="blue-90" -auto-approve
 
 > # Destroy blue environment, green with 100% traffic
 > terraform apply -var-file=variables/development.tfvars -var is_green="true" -var is_blue="false" -var traffic_distribution="green" -auto-approve
+
 ```
