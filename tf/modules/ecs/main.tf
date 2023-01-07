@@ -4,6 +4,9 @@ locals {
     Environment = "${terraform.workspace}"
     Name        = "${var.prefix}-${var.suffix}"
   }
+
+  frontend_repo = "${var.ecr_uri}/${var.frontend_name}:${var.tag_version}"
+  backend_repo  = "${var.ecr_uri}/${var.backend_name}:${var.tag_version}"
 }
 
 resource "aws_security_group" "ecomm_sg" {
@@ -35,6 +38,12 @@ data "aws_iam_role" "exeution_role_arn_ecs" {
   name = "ecsTaskExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "ecomm_application_ecs_logs" {
+  name = "/ecs/ecomm-application"
+
+  tags = local.tags
+}
+
 resource "aws_ecs_task_definition" "ecomm_app_task" {
   family                   = "ecomm-lamp-app"
   network_mode             = "awsvpc"
@@ -42,53 +51,51 @@ resource "aws_ecs_task_definition" "ecomm_app_task" {
   execution_role_arn       = data.aws_iam_role.exeution_role_arn_ecs.arn
   cpu                      = 512
   memory                   = 1024
-  container_definitions    = <<EOF
-   [
+  container_definitions = jsonencode([
     {
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/ecomm-test",
-          "awslogs-region": "eu-west-1",
-          "awslogs-stream-prefix": "ecs"
+      "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-group" : "/ecs/ecomm-application",
+          "awslogs-region" : "eu-west-1",
+          "awslogs-stream-prefix" : "ecs"
         }
       },
-      "portMappings": [
+      "portMappings" : [
         {
-          "hostPort": 80,
-          "protocol": "tcp",
-          "containerPort": 80
+          "hostPort" : 80,
+          "protocol" : "tcp",
+          "containerPort" : 80
         }
       ],
-      "cpu": 256,
-      "memoryReservation": 512,
-      "image": "275562404519.dkr.ecr.eu-west-1.amazonaws.com/ecomm-lamp-app:latest",
-      "essential": true,
-      "name": "ecomm-lamp-app"
+      "cpu" : 256,
+      "memoryReservation" : 512,
+      "image" : "${local.frontend_repo}",
+      "essential" : true,
+      "name" : "ecomm-lamp-app"
     },
     {
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/ecomm-test",
-          "awslogs-region": "eu-west-1",
-          "awslogs-stream-prefix": "ecs"
+      "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-group" : "/ecs/ecomm-application",
+          "awslogs-region" : "eu-west-1",
+          "awslogs-stream-prefix" : "ecs"
         }
       },
-      "portMappings": [
+      "portMappings" : [
         {
-          "hostPort": 3306,
-          "protocol": "tcp",
-          "containerPort": 3306
+          "hostPort" : 3306,
+          "protocol" : "tcp",
+          "containerPort" : 3306
         }
       ],
-      "cpu": 256,
-      "memoryReservation": 512,
-      "image": "275562404519.dkr.ecr.eu-west-1.amazonaws.com/mariadb:latest",
-      "essential": true,
-      "name": "ecomm-db"
+      "cpu" : 256,
+      "memoryReservation" : 512,
+      "image" : "${local.backend_repo}",
+      "essential" : true,
+      "name" : "ecomm-db"
     }
-   ]
-   EOF
-  tags                     = local.tags
+  ])
+  tags = local.tags
 }
