@@ -4,9 +4,14 @@
 
 <br>
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/TheLinuxEnthusiast/ecomm-aws-bluegreen/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/TheLinuxEnthusiast/ecomm-aws-bluegreen/tree/master)
+
+
 ### Introduction
 
 Source code was obtained from KodeKloud which is a PHP based ecommerce sample web application which can be found on github [here](https://github.com/kodekloudhub/learning-app-ecommerce).
+
+A full blog post on this project can be found [here](https://thelinuxenthusiast.com/blog/2022/12/28/ecs-lamp-aws.html) on my website.
 
 <br>
 
